@@ -25,8 +25,8 @@ title: "On This Day"
   {% endfor %}
 
   <div id="no-posts-msg" style="display: none; text-align: center; padding: 40px; background: #fff; border-radius: 12px; color: #64748b; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-    <p>이 날짜에 작성된 과거의 기록이 없습니다.</p>
-    <p style="font-size: 0.9rem; margin-top: 5px; color: #94a3b8;">달력에서 다른 날짜를 선택해보거나 첫 이야기를 남겨보세요!</p>
+    <p>이 날짜의 기록이 없습니다.</p>
+    <p style="font-size: 0.9rem; margin-top: 5px; color: #94a3b8;">첫 이야기를 남겨보세요!</p>
   </div>
 </div>
 
