@@ -2,7 +2,6 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <!-- ★ 핵심: 모바일 화면 비율과 반응형 뷰포트 설정 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ page.title | default: site.title }}</title>
     <style>
@@ -15,7 +14,6 @@
             display: flex;
             justify-content: center;
         }
-        /* 전체 레이아웃: 기본은 좌측 캘린더 + 우측 다이어리 본문 */
         .site-wrapper {
             display: flex;
             gap: 24px;
@@ -23,7 +21,6 @@
             max-width: 880px;
             align-items: flex-start;
         }
-        /* 좌측 달력 사이드바 */
         .calendar-sidebar {
             width: 220px;
             background: #ffffff;
@@ -55,38 +52,37 @@
             font-weight: 500;
             padding-bottom: 6px;
         }
-.cal-cell {
+        /* 모든 날짜 기본 스타일: 적당히 짙은 회색 */
+        .cal-cell {
             padding: 4px 0;
             border-radius: 4px;
-            /* 글이 없는 기본 날짜: 연한 회색 */
-            color: #94a3b8; 
+            color: #475569 !important; 
+            font-weight: 500;
             display: flex;
             align-items: center;
             justify-content: center;
             aspect-ratio: 1;
             font-size: 0.85rem;
             background: transparent;
-        }
-        /* ★ 글이 있는 날짜: 확실하게 짙은 색과 배경 적용 (!important로 우선순위 확보) */
-        .cal-cell.has-post {
-            color: #0f172a !important;
-            font-weight: 800 !important;
-            background: #e2e8f0 !important;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: background 0.2s;
         }
-        .cal-cell.has-post:hover {
-            background: #cbd5e1 !important;
-            color: #1d4ed8 !important;
+        .cal-cell:hover {
+            background: #f1f5f9;
+            color: #1e293b !important;
         }
-        /* 현재 선택된 날짜: 파란색 강조 */
-        .cal-cell.selected {
-            background: #3b82f6 !important;
+        /* 오늘 날짜: 휴일 느낌의 빨간색을 피하고, 세련된 로즈 핑크 포인트 적용 */
+        .cal-cell.today {
+            background: #e11d48 !important;
             color: #ffffff !important;
-            font-weight: 800 !important;
+            font-weight: 700 !important;
+            border-radius: 50%; /* 동그랗게 강조 */
+        }
+        /* 현재 주소창에 선택된 날짜 (오늘과 겹칠 수 있음) */
+        .cal-cell.selected {
+            border: 2px solid #0284c7;
         }
 
-        /* 우측 다이어리 본문 영역 */
         .diary-container {
             flex-grow: 1;
             max-width: 600px;
@@ -125,17 +121,16 @@
         }
 
         .diary-main {
-            font-size: 0.87rem; 
+            font-size: 0.95rem; 
             line-height: 1.7;   
         }
         .diary-main p {
             margin-bottom: 1em;
         }
 
-        /* ★ 폭이 좁은 디바이스(모바일 등 768px 이하): 세로 배치 및 캘린더 하단 이동 */
         @media (max-width: 768px) {
             .site-wrapper {
-                flex-direction: column-reverse; /* 포스트가 위, 캘린더가 아래로 감 */
+                flex-direction: column-reverse;
                 align-items: stretch;
                 max-width: 100%;
             }
@@ -156,7 +151,7 @@
 </head>
 <body>
     <div class="site-wrapper">
-        <!-- 좌측 캘린더 사이드바 (모바일에서는 본문 아래로 이동) -->
+        <!-- 좌측 캘린더 사이드바 -->
         <aside class="calendar-sidebar">
             <div class="cal-header">
                 <span id="cal-month-title">로딩 중...</span>
@@ -173,12 +168,12 @@
             <div id="cal-days-grid" class="cal-grid" style="margin-top: 2px;"></div>
         </aside>
 
-        <!-- 우측 다이어리 본문 영역 (모바일에서는 상단에 넓게 배치) -->
+        <!-- 우측 다이어리 본문 영역 -->
         <div class="diary-container">
             <header class="diary-header">
-                <a href="#" id="prev-btn" class="nav-btn">◀ </a>
+                <a href="#" id="prev-btn" class="nav-btn">◀ 전날</a>
                 <h1 class="current-date" id="header-date-text">로딩 중...</h1>
-                <a href="#" id="next-btn" class="nav-btn"> ▶</a>
+                <a href="#" id="next-btn" class="nav-btn">다음날 ▶</a>
             </header>
 
             <main class="diary-main">
@@ -188,22 +183,16 @@
     </div>
 
     <script>
-        const existingDates = [
-            {% assign post_dates = site.posts | map: "date" | date: "%m-%d" | uniq %}
-            {% for d in post_dates %}
-                "{{ d }}"{% unless forloop.last %},{% endunless %}
-            {% endfor %}
-        ];
-
         document.addEventListener("DOMContentLoaded", function() {
             const urlParams = new URLSearchParams(window.location.search);
             let mmddStr = urlParams.get('date');
             
             const currentYear = new Date().getFullYear();
+            const todayObj = new Date();
+            const todayMMDD = String(todayObj.getMonth() + 1).padStart(2, '0') + '-' + String(todayObj.getDate()).padStart(2, '0');
 
             if (!mmddStr || !/^\d{2}-\d{2}$/.test(mmddStr)) {
-                const today = new Date();
-                mmddStr = String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+                mmddStr = todayMMDD;
             }
 
             const currentDate = new Date(`${currentYear}-${mmddStr}T00:00:00`);
@@ -246,13 +235,17 @@
                 cell.className = 'cal-cell';
                 cell.innerText = day;
 
-                if (existingDates.includes(cellMMDD)) {
-                    cell.classList.add('has-post');
-                    cell.onclick = function() {
-                        window.location.href = `?date=${cellMMDD}`;
-                    };
+                // 클릭 시 해당 날짜로 이동
+                cell.onclick = function() {
+                    window.location.href = `?date=${cellMMDD}`;
+                };
+
+                // 오늘 날짜 표시 (빨간색 대신 세련된 로즈 핑크 동그라미 포인트)
+                if (cellMMDD === todayMMDD && currentYear === todayObj.getFullYear()) {
+                    cell.classList.add('today');
                 }
 
+                // 현재 선택된 날짜 테두리 표시
                 if (cellMMDD === mmddStr) {
                     cell.classList.add('selected');
                 }
