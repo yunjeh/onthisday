@@ -31,9 +31,6 @@
             box-sizing: border-box;
         }
         .cal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             font-weight: 600;
             font-size: 0.95rem;
             margin-bottom: 12px;
@@ -52,11 +49,11 @@
             font-weight: 500;
             padding-bottom: 6px;
         }
-        /* 모든 날짜 기본 스타일: 적당히 짙은 회색 */
+        /* 기본 날짜 스타일 */
         .cal-cell {
             padding: 4px 0;
-            border-radius: 4px;
-            color: #475569 !important; 
+            border-radius: 6px;
+            color: #475569;
             font-weight: 500;
             display: flex;
             align-items: center;
@@ -69,18 +66,19 @@
         }
         .cal-cell:hover {
             background: #f1f5f9;
-            color: #1e293b !important;
+            color: #1e293b;
         }
-        /* 오늘 날짜: 휴일 느낌의 빨간색을 피하고, 세련된 로즈 핑크 포인트 적용 */
+        /* 오늘 날짜: 밝은 하늘색 배경 */
         .cal-cell.today {
-            background: #e11d48 !important;
-            color: #ffffff !important;
-            font-weight: 700 !important;
-            border-radius: 50%; /* 동그랗게 강조 */
+            background: #e0f2fe;
+            color: #0369a1;
+            font-weight: 700;
         }
-        /* 현재 주소창에 선택된 날짜 (오늘과 겹칠 수 있음) */
+        /* 선택된 날짜: 밝은 파랑 배경 + 흰색 글씨 */
         .cal-cell.selected {
-            border: 2px solid #0284c7;
+            background: #3b82f6 !important;
+            color: #ffffff !important;
+            font-weight: 700;
         }
 
         .diary-container {
@@ -121,7 +119,7 @@
         }
 
         .diary-main {
-            font-size: 0.95rem; 
+            font-size: 0.88rem; 
             line-height: 1.7;   
         }
         .diary-main p {
@@ -198,9 +196,10 @@
             const currentDate = new Date(`${currentYear}-${mmddStr}T00:00:00`);
             const targetMonth = currentDate.getMonth(); 
 
-            const dateString = currentDate.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
-            document.getElementById('header-date-text').innerText = dateString;
+            // 상단 헤더 날짜 표시
+            document.getElementById('header-date-text').innerText = currentDate.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
 
+            // 전날 / 다음날 버튼 링크 설정
             let prevDate = new Date(currentDate);
             prevDate.setDate(currentDate.getDate() - 1);
             let nextDate = new Date(currentDate);
@@ -212,6 +211,7 @@
             document.getElementById('prev-btn').href = `?date=${formatMMDD(prevDate)}`;
             document.getElementById('next-btn').href = `?date=${formatMMDD(nextDate)}`;
 
+            // 캘린더 월 타이틀
             const monthNames = ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"];
             document.getElementById('cal-month-title').innerText = `${currentYear}년 ${monthNames[targetMonth]}`;
 
@@ -235,17 +235,16 @@
                 cell.className = 'cal-cell';
                 cell.innerText = day;
 
-                // 클릭 시 해당 날짜로 이동
                 cell.onclick = function() {
                     window.location.href = `?date=${cellMMDD}`;
                 };
 
-                // 오늘 날짜 표시 (빨간색 대신 세련된 로즈 핑크 동그라미 포인트)
+                // 오늘 날짜 (하늘색)
                 if (cellMMDD === todayMMDD && currentYear === todayObj.getFullYear()) {
                     cell.classList.add('today');
                 }
 
-                // 현재 선택된 날짜 테두리 표시
+                // 선택된 날짜 (파란색)
                 if (cellMMDD === mmddStr) {
                     cell.classList.add('selected');
                 }
