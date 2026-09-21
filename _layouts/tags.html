@@ -1,54 +1,109 @@
 ---
 layout: default
-title: "Tags"
-permalink: /tags
+title: "태그별 모아보기"
 ---
-{%-include back_link.html-%}
 
-<h1>{{ page.title }}</h1>
-{% assign tags = site.tags | sort %}
+<div style="background: #ffffff; padding: 24px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+  <h2 style="font-size: 1.2rem; margin-top: 0; margin-bottom: 16px; color: #1e293b;">🏷️ 태그 클라우드</h2>
+  
+  <!-- 1. 전체 태그 목록 (클라우드 버튼 형태) -->
+  <div id="tag-cloud" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #f1f5f9;">
+    {% assign all_tags = site.posts | map: "tags" | join: "," | split: "," | uniq | sort %}
+    {% for tag in all_tags %}
+      {% assign trimmed_tag = tag | strip %}
+      {% if trimmed_tag != "" %}
+        <a href="?tag={{ trimmed_tag }}" class="tag-badge" data-tag="{{ trimmed_tag }}" style="background: #f1f5f9; color: #475569; padding: 4px 10px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; font-weight: 500; transition: all 0.2s;">
+          #{{ trimmed_tag }}
+        </a>
+      {% endif %}
+    {% endfor %}
+  </div>
 
-<!-- 상단 태그 클라우드 (색인) -->
-<div class="tags-cloud" style="margin-bottom: 30px;">
-  {% for tag in tags %}
-    <a href="#{{ tag[0] }}" style="margin-right: 15px; font-weight: bold; text-decoration: none; color: #007bff;">
-      #{{ tag[0] }} <span style="font-weight: normal; color: #666;">({{ tag[1].size }})</span>
-    </a>
-  {% endfor %}
+  <!-- 2. 선택된 태그의 글들을 월별로 모아서 보여주는 영역 -->
+  <div id="tag-posts-container">
+    <p id="tag-select-msg" style="color: #64748b; font-size: 0.9rem; text-align: center; padding: 20px 0;">
+      상단의 태그를 선택하여 기록을 월별로 모아보세요.
+    </p>
+    
+    <div id="posts-list-wrapper" style="display: none;">
+      <h3 id="selected-tag-title" style="font-size: 1.1rem; color: #0284c7; margin-bottom: 20px;"></h3>
+      
+      <!-- 자바스크립트로 월별 그룹화되어 렌더링될 자리 -->
+      <div id="monthly-groups"></div>
+    </div>
+  </div>
 </div>
 
-<!--<hr style="margin: 40px 0;">-->
+<!-- 사이트의 모든 포스트 데이터를 자바스크립트로 안전하게 전달 -->
+<script>
+    const allPosts = [
+        {% for post in site.posts %}
+        {
+            title: "{{ post.title }}",
+            date: "{{ post.date | date: '%Y-%m-%d %H:%M' }}",
+            yearMonth: "{{ post.date | date: '%Y년 %m월' }}",
+            url: "{{ post.url }}",
+            content: {{ post.content | strip_html | truncatewords: 25 | jsonify }},
+            tags: [{% if post.tags %}{% for t in post.tags %}"{{ t | strip }}"{% unless forloop.last %},{% endunless %}{% endfor %}{% endif %}]
+        }{% unless forloop.last %},{% endunless %}
+        {% endfor %}
+    ];
 
-<!-- 태그별 포스트 리스트 영역 -->
-{% for tag in tags %}
-  <div id="{{ tag[0] }}" class="tag-section" style="margin-bottom: 50px;">
-    <h4 style="border-left: 5px solid #007bff; padding-left: 10px; margin-bottom: 20px;">
-      {{ tag[0] }} <small style="color: #888;">({{ tag[1].size }})</small>
-    </h4>
+    document.addEventListener("DOMContentLoaded", function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentTag = urlParams.get('tag');
 
-    <div class="post-list">
-      {% for post in tag[1] %}
-      <div>
-        {{ post.content | strip_html | strip_newlines }}
-        <time class="post-date">
-          {{ post.date | date: "%Y.%m.%d. %H:%M:%S" }}
-        </time>
-      </div>
-      {% endfor %}
-    </div>
-    
-    <!--<a href="#" style="font-size: 0.8em; color: #bbb;">↑ 위로 가기</a>-->
-  </div>
-{% endfor %}
+        if (currentTag) {
+            // 선택된 태그 버튼 강조 스타일
+            document.querySelectorAll('.tag-badge').forEach(badge => {
+                if (badge.getAttribute('data-tag') === currentTag) {
+                    badge.style.background = '#3b82f6';
+                    badge.style.color = '#ffffff';
+                }
+            });
 
+            // 해당 태그가 포함된 포스트 필터링
+            const filteredPosts = allPosts.filter(post => post.tags.includes(currentTag));
 
+            document.getElementById('tag-select-msg').style.display = 'none';
+            document.getElementById('posts-list-wrapper').style.display = 'block';
+            document.getElementById('selected-tag-title').innerText = `#${currentTag} 태그가 포함된 기록 (${filteredPosts.length}개)`;
 
+            const monthlyGroupsEl = document.getElementById('monthly-groups');
+            
+            if (filteredPosts.length === 0) {
+                monthlyGroupsEl.innerHTML = '<p style="color: #64748b; text-align: center;">이 태그가 작성된 기록이 없습니다.</p>';
+                return;
+            }
 
-<style>
-  html {
-    scroll-behavior: smooth;
-  }
-  .tag-section:target h2 {
-    color: #007bff /* 클릭해서 이동했을 때 제목 강조 */;
-  }
-</style>
+            // 월별로 그룹화 (YYYY년 MM월 기준)
+            const grouped = {};
+            filteredPosts.forEach(post => {
+                if (!grouped[post.yearMonth]) {
+                    grouped[post.yearMonth] = [];
+                }
+                grouped[post.yearMonth].push(post);
+            });
+
+            // HTML 생성
+            let html = '';
+            for (const [ym, posts] of Object.entries(grouped)) {
+                html += `<div style="margin-bottom: 24px;">`;
+                html += `<h4 style="font-size: 0.95rem; color: #334155; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; margin-bottom: 12px;">📅 ${ym}</h4>`;
+                html += `<ul style="list-style: none; padding: 0; margin: 0;">`;
+                
+                posts.forEach(post => {
+                    // 날짜에서 월-일만 추출 (?date=MM-DD 링크용)
+                    const mmdd = post.date.substring(5, 10); 
+                    html += `<li style="margin-bottom: 10px; padding: 10px 14px; background: #f8fafc; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">`;
+                    html += `<a href="/?date=${mmdd}" style="color: #1e293b; text-decoration: none; font-weight: 500; font-size: 0.9rem;">${post.date}</a>`;
+                    html += `<a href="/?date=${mmdd}" style="font-size: 0.8rem; color: #3b82f6; text-decoration: none;">해당 날짜 보기 ➔</a>`;
+                    html += `</li>`;
+                });
+
+                html += `</ul></div>`;
+            }
+            monthlyGroupsEl.innerHTML = html;
+        }
+    });
+</script>
