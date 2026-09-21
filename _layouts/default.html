@@ -21,11 +21,11 @@
             max-width: 880px;
             align-items: flex-start;
         }
-        /* 사이드바 캘린더 스타일 (간격 축소) */
+        /* 사이드바 영역 */
         .calendar-sidebar {
-            width: 200px; /* 전체 너비 살짝 축소 */
+            width: 200px;
             background: #ffffff;
-            padding: 12px; /* 내부 여백 축소 */
+            padding: 12px;
             border-radius: 12px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             flex-shrink: 0;
@@ -34,24 +34,24 @@
         .cal-header {
             font-weight: 600;
             font-size: 0.9rem;
-            margin-bottom: 8px; /* 하단 여백 축소 */
+            margin-bottom: 8px;
             color: #1e293b;
             padding: 0 2px;
         }
         .cal-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 1px; /* 날짜 사이 간격 좁힘 */
+            gap: 1px;
             text-align: center;
-            font-size: 0.75rem; /* 글자 크기 살짝 축소 */
+            font-size: 0.75rem;
         }
         .cal-day-name {
             color: #94a3b8;
             font-weight: 500;
-            padding-bottom: 4px; /* 요일 아래 간격 축소 */
+            padding-bottom: 4px;
         }
         .cal-cell {
-            padding: 2px 0; /* 세로 줄간격/패딩 축소 */
+            padding: 2px 0;
             border-radius: 4px;
             color: #475569;
             font-weight: 500;
@@ -77,6 +77,37 @@
             border: 2px solid #0284c7 !important;
             color: #1e293b;
             font-weight: 700;
+        }
+
+        /* 캘린더 아래 태그 클라우드 스타일 */
+        .sidebar-tags {
+            margin-top: 20px;
+            padding-top: 14px;
+            border-top: 1px solid #f1f5f9;
+        }
+        .sidebar-tags-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+        .tag-cloud-box {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        .sidebar-tag-badge {
+            font-size: 0.75rem;
+            background: #f1f5f9;
+            color: #475569;
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .sidebar-tag-badge:hover {
+            background: #e2e8f0;
+            color: #1e293b;
         }
 
         /* 우측 본문 영역 */
@@ -125,7 +156,6 @@
             margin-bottom: 1em;
         }
 
-        /* 모바일 반응형: 캘린더가 본문 아래로 이동 */
         @media (max-width: 768px) {
             .site-wrapper {
                 flex-direction: column-reverse;
@@ -149,6 +179,7 @@
 </head>
 <body>
     <div class="site-wrapper">
+        <!-- 좌측 사이드바 (캘린더 + 태그 클라우드) -->
         <aside class="calendar-sidebar">
             <div class="cal-header">
                 <span id="cal-month-title">로딩 중...</span>
@@ -163,8 +194,23 @@
                 <div class="cal-day-name">토</div>
             </div>
             <div id="cal-days-grid" class="cal-grid" style="margin-top: 2px;"></div>
+
+            <!-- 캘린더 아래 태그 클라우드 섹션 -->
+            <div class="sidebar-tags">
+                <div class="sidebar-tags-title">Tags</div>
+                <div class="tag-cloud-box">
+                    {% assign all_tags = site.posts | map: "tags" | join: "," | split: "," | uniq | sort %}
+                    {% for tag in all_tags %}
+                        {% assign trimmed_tag = tag | strip %}
+                        {% if trimmed_tag != "" %}
+                            <a href="/tags.html?tag={{ trimmed_tag }}" class="sidebar-tag-badge">#{{ trimmed_tag }}</a>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
         </aside>
 
+        <!-- 우측 본문 영역 -->
         <div class="diary-container">
             <header class="diary-header">
                 <a href="#" id="prev-btn" class="nav-btn">◀ 전날</a>
