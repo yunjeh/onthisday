@@ -204,7 +204,8 @@
                     {% for tag in all_tags %}
                         {% assign trimmed_tag = tag | strip %}
                         {% if trimmed_tag != "" %}
-                            <a href="/tags?tag={{ trimmed_tag }}" class="sidebar-tag-badge">#{{ trimmed_tag }}</a>
+                            <!-- ★ site.baseurl을 붙여서 하위 경로(/onthisday/)가 유지되도록 수정 -->
+                            <a href="{{ site.baseurl }}/tags?tag={{ trimmed_tag }}" class="sidebar-tag-badge">#{{ trimmed_tag }}</a>
                         {% endif %}
                     {% endfor %}
                 </div>
