@@ -21,6 +21,7 @@
             max-width: 880px;
             align-items: flex-start;
         }
+        /* 사이드바 캘린더 스타일 */
         .calendar-sidebar {
             width: 220px;
             background: #ffffff;
@@ -49,7 +50,6 @@
             font-weight: 500;
             padding-bottom: 6px;
         }
-        /* 기본 날짜 스타일 */
         .cal-cell {
             padding: 4px 0;
             border-radius: 6px;
@@ -68,19 +68,18 @@
             background: #f1f5f9;
             color: #1e293b;
         }
-        /* 오늘 날짜: 밝은 하늘색 배경 */
         .cal-cell.today {
             background: #e0f2fe;
             color: #0369a1;
             font-weight: 700;
         }
-        /* 선택된 날짜: 밝은 파랑 배경 + 흰색 글씨 */
         .cal-cell.selected {
             background: #3b82f6 !important;
             color: #ffffff !important;
             font-weight: 700;
         }
 
+        /* 우측 본문 영역 */
         .diary-container {
             flex-grow: 1;
             max-width: 600px;
@@ -126,6 +125,7 @@
             margin-bottom: 1em;
         }
 
+        /* 모바일 반응형: 캘린더가 본문 아래로 이동 */
         @media (max-width: 768px) {
             .site-wrapper {
                 flex-direction: column-reverse;
@@ -149,7 +149,6 @@
 </head>
 <body>
     <div class="site-wrapper">
-        <!-- 좌측 캘린더 사이드바 -->
         <aside class="calendar-sidebar">
             <div class="cal-header">
                 <span id="cal-month-title">로딩 중...</span>
@@ -166,7 +165,6 @@
             <div id="cal-days-grid" class="cal-grid" style="margin-top: 2px;"></div>
         </aside>
 
-        <!-- 우측 다이어리 본문 영역 -->
         <div class="diary-container">
             <header class="diary-header">
                 <a href="#" id="prev-btn" class="nav-btn">◀ 전날</a>
@@ -196,10 +194,8 @@
             const currentDate = new Date(`${currentYear}-${mmddStr}T00:00:00`);
             const targetMonth = currentDate.getMonth(); 
 
-            // 상단 헤더 날짜 표시
             document.getElementById('header-date-text').innerText = currentDate.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
 
-            // 전날 / 다음날 버튼 링크 설정
             let prevDate = new Date(currentDate);
             prevDate.setDate(currentDate.getDate() - 1);
             let nextDate = new Date(currentDate);
@@ -211,7 +207,6 @@
             document.getElementById('prev-btn').href = `?date=${formatMMDD(prevDate)}`;
             document.getElementById('next-btn').href = `?date=${formatMMDD(nextDate)}`;
 
-            // 캘린더 월 타이틀
             const monthNames = ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"];
             document.getElementById('cal-month-title').innerText = `${currentYear}년 ${monthNames[targetMonth]}`;
 
@@ -239,12 +234,9 @@
                     window.location.href = `?date=${cellMMDD}`;
                 };
 
-                // 오늘 날짜 (하늘색)
                 if (cellMMDD === todayMMDD && currentYear === todayObj.getFullYear()) {
                     cell.classList.add('today');
                 }
-
-                // 선택된 날짜 (파란색)
                 if (cellMMDD === mmddStr) {
                     cell.classList.add('selected');
                 }
