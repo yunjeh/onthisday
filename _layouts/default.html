@@ -156,6 +156,7 @@
             margin-bottom: 1em;
         }
 
+        /* 모바일 반응형: 캘린더가 본문 아래로 이동 */
         @media (max-width: 768px) {
             .site-wrapper {
                 flex-direction: column-reverse;
@@ -203,7 +204,7 @@
                     {% for tag in all_tags %}
                         {% assign trimmed_tag = tag | strip %}
                         {% if trimmed_tag != "" %}
-                            <a href="/tags.html?tag={{ trimmed_tag }}" class="sidebar-tag-badge">#{{ trimmed_tag }}</a>
+                            <a href="/tags?tag={{ trimmed_tag }}" class="sidebar-tag-badge">#{{ trimmed_tag }}</a>
                         {% endif %}
                     {% endfor %}
                 </div>
